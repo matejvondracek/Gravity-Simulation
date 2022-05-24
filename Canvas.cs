@@ -13,13 +13,18 @@ namespace Gravity_Simulation
         readonly List<Body> bodies = new List<Body>();
         readonly float gravConstant = 100;
         Vector2 centerOfMass = new Vector2();
+        public bool trajectories = false;
+        List<Point> trajectoryPoints = new List<Point>();
+        public Color trajectoryColor = Color.Red;
+        public float speed = 1f;
+
         public Canvas(Rectangle _rect) : base(_rect)
         {
             Texture2D texture = Game1.self.Content.Load<Texture2D>("body1");
-            bodies.Add(new Body(new Vector2(800, 500), new Vector2(5, 10), 50, 500, texture));
-            bodies.Add(new Body(new Vector2(800, 800), new Vector2(12, 0), 10, 100, texture));
+            bodies.Add(new Body(new Vector2(800, 500), new Vector2(), 20, 50, texture));
+            bodies.Add(new Body(new Vector2(800, 800), new Vector2(12, 0), 30, 100, texture));
             bodies.Add(new Body(new Vector2(800, 850), new Vector2(16, 0), 5, 1, texture));
-            bodies.Add(new Body(new Vector2(400, 400), new Vector2(-5, -5), 30, 500, texture));
+            bodies.Add(new Body(new Vector2(400, 400), new Vector2(), 50, 500, texture));
         }
 
         #region cycle
@@ -50,7 +55,7 @@ namespace Gravity_Simulation
             //move bodies
             foreach (Body body in bodies)
             {
-                body.Update();
+                body.Update(speed);
             }
 
             //check for collisions
@@ -103,10 +108,28 @@ namespace Gravity_Simulation
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            //draw background
             DrawShape.Rectangle(spriteBatch, rect, Color.Yellow, 10, Color.Black);
+
+            //draw trajectories
+            if (trajectories)
+            {
+                foreach (Body body in bodies)
+                {
+                    if (!trajectoryPoints.Contains(body.pos.ToPoint())) trajectoryPoints.Add(body.pos.ToPoint());
+                }
+
+                foreach (Point point in trajectoryPoints)
+                {
+                    DrawShape.Rectangle(spriteBatch, new Rectangle(point.X, point.Y, 2, 2), trajectoryColor);
+                }
+            }
+            else trajectoryPoints.Clear();
+
+            //draw bodies
             foreach (Body body in bodies)
             {
-                body.Draw(spriteBatch);
+                if (rect.Intersects(body.drawbox)) body.Draw(spriteBatch);
             }
         }
         #endregion

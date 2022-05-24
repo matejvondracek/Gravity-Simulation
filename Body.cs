@@ -40,11 +40,15 @@ namespace Gravity_Simulation
         {           
             
             Vector2 distance = body.pos - pos;
-
             pos += distance / (mass + body.mass) * body.mass;
+
             mass += body.mass;
             momentum = momentum + body.momentum;
             velocity = momentum / mass;
+
+            int volume1 = (int)(4f / 3f * 3.14f * Math.Pow(radius, 3));
+            int volume2 = (int)(4f / 3f * 3.14f * Math.Pow(body.radius, 3));
+            radius = (int)Math.Cbrt((3f * (volume1 + volume2)) / (4f * 3.14f));
         }
 
         public Vector2 GetMomementum()
@@ -54,11 +58,19 @@ namespace Gravity_Simulation
         }
 
         #region cycle
-        public void Update()
+        public void Update(float speed)
         {
-            velocity += acceleration;
-            pos += velocity;
-            drawbox = new Rectangle((int)pos.X, (int)pos.Y, 2 * radius, 2 * radius);
+            if (speed < 1)
+            {
+                velocity += acceleration * speed;
+                pos += velocity * speed;
+            }
+            else
+            {
+                velocity += acceleration;
+                pos += velocity;
+            }            
+            drawbox = new Rectangle((int)pos.X - radius, (int)pos.Y - radius, 2 * radius, 2 * radius);
             acceleration = new Vector2();
             GetMomementum();
 

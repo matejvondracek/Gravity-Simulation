@@ -2,6 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ButtonUI;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Gravity_Simulation
 {
@@ -11,12 +14,15 @@ namespace Gravity_Simulation
         SpriteBatch spriteBatch;
         RenderTarget2D renderTarget;
         readonly int screenWidth, screenHeight;
-        ToggleButton startStop;
-        ToggleButton tracking;
-        Label startStopLabel, title;
+        ToggleButton startStop, tracking, drawTrajectories;
+        Label startStopLabel, title, simTimeLabel, simSpeedLabel;
         Canvas canvas;
+        Slider simSpeedSlider;
         UIGroup group = new UIGroup();
+        Color background = Color.CornflowerBlue;
         public static Game self;
+        float simTime = 0, programTime = 0, simSpeed = 1f;
+        //int simSpeed = 4;
 
         public Game1()
         {
@@ -47,9 +53,10 @@ namespace Gravity_Simulation
             renderTarget = new RenderTarget2D(GraphicsDevice, 1920, 1080);
 
             //UI
-            Texture2D[] textures = new Texture2D[2];
+            Texture2D[] textures = new Texture2D[3];
             textures[0] = Content.Load<Texture2D>("button1");
             textures[1] = Content.Load<Texture2D>("button2");
+            textures[2] = Content.Load<Texture2D>("button2");
             SpriteFont font = Content.Load<SpriteFont>("Arial");
 
             startStop = new ToggleButton(new Rectangle(1700, 200, 200, 100), textures, false);
@@ -63,11 +70,22 @@ namespace Gravity_Simulation
             tracking = new ToggleButton(new Rectangle(1700, 350, 200, 100), textures, true);
             tracking.DefineText("Tracking on", "Tracking off", font, 10, Color.Black);
                 group.Add(tracking);
+            drawTrajectories = new ToggleButton(new Rectangle(1700, 500, 200, 100), textures, false);
+            drawTrajectories.DefineText("Drawing on", "Drawing off", font, 10, Color.Black);
+                group.Add(drawTrajectories);
+            simTimeLabel = new Label(new Rectangle(1400, 0, 400, 100), "Simulation time elapsed: 0 s", font, Color.Black);
+                group.Add(simTimeLabel);
+            simSpeedSlider = new Slider(new Rectangle(1600, 650, 300, 20), 1, 8, 8, textures);
+                group.Add(simSpeedSlider);
+            simSpeedLabel = new Label(new Rectangle(1600, 670, 200, 50), "Simulation speed: 1x", font, Color.Black);
+                group.Add(simSpeedLabel);
             DrawShape.Load(GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime)
         {
+            programTime += 1;
+
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             if (Keyboard.GetState().IsKeyDown(Keys.F11))
@@ -77,13 +95,38 @@ namespace Gravity_Simulation
             ///KeyboardState keyboard = Keyboard.GetState();
 
             group.Update(mouse, new KeyboardState());
-            if (startStop.on)
-            {
-                canvas.Update(mouse);
-                if (tracking.on) canvas.TrackCenterOfMass();
-            }
+
+            SimulateTick(simSpeed);
+            
+            simSpeed = (float)Math.Pow(2, simSpeedSlider.value - 4);
+            simSpeedLabel.text = "Simulation speed: " + simSpeed.ToString("0.00") + "x";
 
             base.Update(gameTime);
+        }
+
+        public void SimulateTick(float speed)
+        {
+            if (startStop.on)
+            {
+                canvas.speed = simSpeed;
+                simTime += 1f / 60f * simSpeed;
+                simTimeLabel.text = "Simulation time elapsed: " + simTime.ToString("0.00") + " s";
+                MouseState mouse = Mouse.GetState();
+                if (speed > 1)
+                {
+                    for (int i = 0; i < speed; i++)
+                    {
+                        canvas.Update(mouse);
+                    }
+                }
+                else
+                {
+                    canvas.Update(mouse);
+                }
+                    
+                if (tracking.on) canvas.TrackCenterOfMass();
+            }
+            canvas.trajectories = drawTrajectories.on;
         }
 
         protected override void Draw(GameTime gameTime)
@@ -92,9 +135,13 @@ namespace Gravity_Simulation
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             //render to FullHD
-            spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-            group.Draw(spriteBatch);
+            spriteBatch.Begin(samplerState: SamplerState.PointClamp);            
             canvas.Draw(spriteBatch);
+            DrawShape.Rectangle(spriteBatch, new Rectangle(0, 0, 1920, canvas.rect.Y), background);
+            DrawShape.Rectangle(spriteBatch, new Rectangle(canvas.rect.X + canvas.rect.Width, 0, 1920 - canvas.rect.X + canvas.rect.Width, 1080), background);
+            DrawShape.Rectangle(spriteBatch, new Rectangle(0, canvas.rect.Y + canvas.rect.Height, 1920, 1080 - canvas.rect.Y + canvas.rect.Height), background);
+            DrawShape.Rectangle(spriteBatch, new Rectangle(0, 0, canvas.rect.X, 1080), background);
+            group.Draw(spriteBatch);
             spriteBatch.End();
 
             AdjustRenderTarget();     
