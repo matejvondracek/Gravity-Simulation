@@ -12,12 +12,14 @@ namespace Gravity_Simulation
     {
         readonly List<Body> bodies = new List<Body>();
         readonly float gravConstant = 100;
+        Vector2 centerOfMass = new Vector2();
         public Canvas(Rectangle _rect) : base(_rect)
         {
             Texture2D texture = Game1.self.Content.Load<Texture2D>("body1");
-            bodies.Add(new Body(new Vector2(800, 500), new Vector2(), 50, 500, texture));
-            bodies.Add(new Body(new Vector2(800, 800), new Vector2(12, 0), 10, 10, texture));
+            bodies.Add(new Body(new Vector2(800, 500), new Vector2(5, 10), 50, 500, texture));
+            bodies.Add(new Body(new Vector2(800, 800), new Vector2(12, 0), 10, 100, texture));
             bodies.Add(new Body(new Vector2(800, 850), new Vector2(16, 0), 5, 1, texture));
+            bodies.Add(new Body(new Vector2(400, 400), new Vector2(-5, -5), 30, 500, texture));
         }
 
         #region cycle
@@ -50,10 +52,58 @@ namespace Gravity_Simulation
             {
                 body.Update();
             }
+
+            //check for collisions
+            HashSet<Body> toBeRemoved = new HashSet<Body>();
+            foreach (Body body1 in bodies)
+            {
+                foreach (Body body2 in bodies)
+                {
+                    if ((body1 != body2) && !toBeRemoved.Contains(body1) && !toBeRemoved.Contains(body2) && body1.OverlapsWith(body2))
+                    {
+                        if (body1.mass < body2.mass)
+                        {                            
+                            body2.CollidesWith(body1);
+                            toBeRemoved.Add(body1);
+                            
+                        }
+                        else
+                        {
+                            body1.CollidesWith(body2);
+                            toBeRemoved.Add(body2);
+                        }
+                    }
+                }
+            }
+            foreach (Body body in toBeRemoved)
+            {
+                bodies.Remove(body);
+            }         
+        }
+
+        private void UpdateCenterOfMass()
+        {
+            Body centerBody = new Body(bodies[0].pos, bodies[0].velocity, 100, bodies[0].mass, bodies[0].texture);
+            for (int i = 1; i < bodies.Count; i++)
+            {
+                centerBody.CollidesWith(bodies[i]);
+            }
+            centerOfMass = centerBody.pos;
+        }
+
+        public void TrackCenterOfMass()
+        {
+            UpdateCenterOfMass();
+            Vector2 distance = rect.Center.ToVector2() - centerOfMass;
+            foreach (Body body in bodies)
+            {
+                body.pos += distance;
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            DrawShape.Rectangle(spriteBatch, rect, Color.Yellow, 10, Color.Black);
             foreach (Body body in bodies)
             {
                 body.Draw(spriteBatch);

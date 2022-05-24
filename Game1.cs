@@ -12,8 +12,10 @@ namespace Gravity_Simulation
         RenderTarget2D renderTarget;
         readonly int screenWidth, screenHeight;
         ToggleButton startStop;
+        ToggleButton tracking;
         Label startStopLabel, title;
         Canvas canvas;
+        UIGroup group = new UIGroup();
         public static Game self;
 
         public Game1()
@@ -52,9 +54,16 @@ namespace Gravity_Simulation
 
             startStop = new ToggleButton(new Rectangle(1700, 200, 200, 100), textures, false);
             startStop.DefineText("Running", "Stopped", font, 10, Color.Black);
+                group.Add(startStop);
             startStopLabel = new Label(new Rectangle(1700, 100, 200, 100), "Simulation", font, Color.Black);
+                group.Add(startStopLabel);
             title = new Label(new Rectangle(0, 10, 1920, 100), "Gravity Simulator", font, Color.Black);
-            canvas = new Canvas(new Rectangle(50, 50, 1500, 900));
+                group.Add(title);
+            canvas = new Canvas(new Rectangle(50, 150, 1500, 850));
+            tracking = new ToggleButton(new Rectangle(1700, 350, 200, 100), textures, true);
+            tracking.DefineText("Tracking on", "Tracking off", font, 10, Color.Black);
+                group.Add(tracking);
+            DrawShape.Load(GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime)
@@ -67,8 +76,12 @@ namespace Gravity_Simulation
             MouseState mouse = Mouse.GetState();
             ///KeyboardState keyboard = Keyboard.GetState();
 
-            startStop.Update(mouse);
-            if (startStop.on) canvas.Update(mouse);
+            group.Update(mouse, new KeyboardState());
+            if (startStop.on)
+            {
+                canvas.Update(mouse);
+                if (tracking.on) canvas.TrackCenterOfMass();
+            }
 
             base.Update(gameTime);
         }
@@ -80,9 +93,7 @@ namespace Gravity_Simulation
 
             //render to FullHD
             spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-            startStop.Draw(spriteBatch);
-            startStopLabel.Draw(spriteBatch);
-            title.Draw(spriteBatch);
+            group.Draw(spriteBatch);
             canvas.Draw(spriteBatch);
             spriteBatch.End();
 
