@@ -16,7 +16,7 @@ namespace Gravity_Simulation
         public bool trajectories = false;
         List<Point> trajectoryPoints = new List<Point>();
         public Color trajectoryColor = Color.Red;
-        public float speed = 1f;
+        public float speed = 1f, precision = 1f;
 
         public Canvas(Rectangle _rect) : base(_rect)
         {
@@ -40,50 +40,58 @@ namespace Gravity_Simulation
                 //create body
             }
 
-            //gravity acceleration
-            foreach (Body body1 in bodies)
+            for (int i = 0; i < precision; i++)
             {
-                foreach (Body body2 in bodies)
+                //gravity acceleration
+                foreach (Body body1 in bodies)
                 {
-                    if (body1 != body2)
+                    foreach (Body body2 in bodies)
                     {
-                        Accelerate(body1, body2);
-                    }
-                }
-            }
-
-            //move bodies
-            foreach (Body body in bodies)
-            {
-                body.Update(speed);
-            }
-
-            //check for collisions
-            HashSet<Body> toBeRemoved = new HashSet<Body>();
-            foreach (Body body1 in bodies)
-            {
-                foreach (Body body2 in bodies)
-                {
-                    if ((body1 != body2) && !toBeRemoved.Contains(body1) && !toBeRemoved.Contains(body2) && body1.OverlapsWith(body2))
-                    {
-                        if (body1.mass < body2.mass)
-                        {                            
-                            body2.CollidesWith(body1);
-                            toBeRemoved.Add(body1);
-                            
-                        }
-                        else
+                        if (body1 != body2)
                         {
-                            body1.CollidesWith(body2);
-                            toBeRemoved.Add(body2);
+                            Accelerate(body1, body2);
                         }
                     }
                 }
+
+                //move bodies
+                foreach (Body body in bodies)
+                {
+                    body.Update(speed / precision);
+                }
+
+                //check for collisions
+                HashSet<Body> toBeRemoved = new HashSet<Body>();
+                foreach (Body body1 in bodies)
+                {
+                    foreach (Body body2 in bodies)
+                    {
+                        if ((body1 != body2) && !toBeRemoved.Contains(body1) && !toBeRemoved.Contains(body2) && body1.OverlapsWith(body2))
+                        {
+                            if (body1.mass < body2.mass)
+                            {                            
+                                body2.CollidesWith(body1);
+                                toBeRemoved.Add(body1);
+                            
+                            }
+                            else
+                            {
+                                body1.CollidesWith(body2);
+                                toBeRemoved.Add(body2);
+                            }
+                        }
+                    }
+                }
+                foreach (Body body in toBeRemoved)
+                {
+                    bodies.Remove(body);
+                } 
+
+                if (trajectories)
+                {
+                    MarkTrajectories();
+                }
             }
-            foreach (Body body in toBeRemoved)
-            {
-                bodies.Remove(body);
-            }         
         }
 
         private void UpdateCenterOfMass()
@@ -114,11 +122,6 @@ namespace Gravity_Simulation
             //draw trajectories
             if (trajectories)
             {
-                foreach (Body body in bodies)
-                {
-                    if (!trajectoryPoints.Contains(body.pos.ToPoint())) trajectoryPoints.Add(body.pos.ToPoint());
-                }
-
                 foreach (Point point in trajectoryPoints)
                 {
                     DrawShape.Rectangle(spriteBatch, new Rectangle(point.X, point.Y, 2, 2), trajectoryColor);
@@ -133,6 +136,14 @@ namespace Gravity_Simulation
             }
         }
         #endregion
+
+        private void MarkTrajectories()
+        {
+            foreach (Body body in bodies)
+            {
+                if (!trajectoryPoints.Contains(body.pos.ToPoint())) trajectoryPoints.Add(body.pos.ToPoint());
+            }
+        }
 
         private void Accelerate(Body sourceBody, Body targetBody)
         {

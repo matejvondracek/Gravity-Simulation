@@ -15,14 +15,13 @@ namespace Gravity_Simulation
         RenderTarget2D renderTarget;
         readonly int screenWidth, screenHeight;
         ToggleButton startStop, tracking, drawTrajectories;
-        Label startStopLabel, title, simTimeLabel, simSpeedLabel;
+        Label startStopLabel, title, simTimeLabel, simSpeedLabel, simPrecisionLabel;
         Canvas canvas;
-        Slider simSpeedSlider;
+        Slider simSpeedSlider, simPrecisionSlider;
         UIGroup group = new UIGroup();
         Color background = Color.CornflowerBlue;
         public static Game self;
-        float simTime = 0, programTime = 0, simSpeed = 1f;
-        //int simSpeed = 4;
+        float simTime = 0, simSpeed = 1f, simPrecision = 1f;
 
         public Game1()
         {
@@ -76,30 +75,37 @@ namespace Gravity_Simulation
             simTimeLabel = new Label(new Rectangle(1400, 0, 400, 100), "Simulation time elapsed: 0 s", font, Color.Black);
                 group.Add(simTimeLabel);
             simSpeedSlider = new Slider(new Rectangle(1600, 650, 300, 20), 1, 8, 8, textures);
+            simSpeedSlider.value = 4;
                 group.Add(simSpeedSlider);
             simSpeedLabel = new Label(new Rectangle(1600, 670, 200, 50), "Simulation speed: 1x", font, Color.Black);
                 group.Add(simSpeedLabel);
+            simPrecisionSlider = new Slider(new Rectangle(1600, 750, 300, 20), 1, 8, 8, textures);
+            simPrecisionSlider.value = 1;
+                group.Add(simPrecisionSlider);
+            simPrecisionLabel = new Label(new Rectangle(1600, 770, 250, 50), "Simulation precision: 1x", font, Color.Black);
+                group.Add(simPrecisionLabel);
             DrawShape.Load(GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime)
         {
-            programTime += 1;
-
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             if (Keyboard.GetState().IsKeyDown(Keys.F11))
                 graphics.ToggleFullScreen();
 
             MouseState mouse = Mouse.GetState();
-            ///KeyboardState keyboard = Keyboard.GetState();
 
             group.Update(mouse, new KeyboardState());
-
-            SimulateTick(simSpeed);
-            
+           
             simSpeed = (float)Math.Pow(2, simSpeedSlider.value - 4);
             simSpeedLabel.text = "Simulation speed: " + simSpeed.ToString("0.00") + "x";
+
+            simPrecision = (float)Math.Pow(2, simPrecisionSlider.value - 1);
+            simPrecisionLabel.text = "Simulation precision: " + simPrecision.ToString("0.00") + "x";
+            canvas.precision = simPrecision;
+
+            SimulateTick(simSpeed);
 
             base.Update(gameTime);
         }
