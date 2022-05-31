@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using ButtonUI;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading;
 
 namespace Gravity_Simulation
 {
@@ -15,13 +15,12 @@ namespace Gravity_Simulation
         RenderTarget2D renderTarget;
         readonly int screenWidth, screenHeight;
         ToggleButton startStop, tracking, drawTrajectories;
-        Label startStopLabel, title, simTimeLabel, simSpeedLabel, simPrecisionLabel;
+        Label startStopLabel, title, simTimeLabel, simSpeedLabel, simPrecisionLabel, simFrequencyLabel;
         Canvas canvas;
         Slider simSpeedSlider, simPrecisionSlider;
         UIGroup group = new UIGroup();
         Color background = Color.CornflowerBlue;
         public static Game self;
-        float simTime = 0, simSpeed = 1f, simPrecision = 1f;
 
         public Game1()
         {
@@ -42,7 +41,11 @@ namespace Gravity_Simulation
             graphics.PreferredBackBufferHeight = screenHeight;
             ///graphics.ToggleFullScreen();
             graphics.ApplyChanges();
-           
+            IsFixedTimeStep = true;
+            ThreadStart simThreadStart = new ThreadStart(Physics.StartSimulation);
+            Thread simThread = new Thread(simThreadStart);
+            simThread.Start();
+
             base.Initialize();
         }
 
@@ -57,6 +60,7 @@ namespace Gravity_Simulation
             textures[1] = Content.Load<Texture2D>("button2");
             textures[2] = Content.Load<Texture2D>("button2");
             SpriteFont font = Content.Load<SpriteFont>("Arial");
+            Texture2D sky = Content.Load<Texture2D>("sky");
 
             startStop = new ToggleButton(new Rectangle(1700, 200, 200, 100), textures, false);
             startStop.DefineText("Running", "Stopped", font, 10, Color.Black);
@@ -66,6 +70,7 @@ namespace Gravity_Simulation
             title = new Label(new Rectangle(0, 10, 1920, 100), "Gravity Simulator", font, Color.Black);
                 group.Add(title);
             canvas = new Canvas(new Rectangle(50, 150, 1500, 850));
+            canvas.sky = sky;
             tracking = new ToggleButton(new Rectangle(1700, 350, 200, 100), textures, true);
             tracking.DefineText("Tracking on", "Tracking off", font, 10, Color.Black);
                 group.Add(tracking);
@@ -84,6 +89,8 @@ namespace Gravity_Simulation
                 group.Add(simPrecisionSlider);
             simPrecisionLabel = new Label(new Rectangle(1600, 770, 250, 50), "Simulation precision: 1x", font, Color.Black);
                 group.Add(simPrecisionLabel);
+            simFrequencyLabel = new Label(new Rectangle(100, 0, 400, 100), "Simulation frequency: 0 Hz", font, Color.Black);
+                group.Add(simFrequencyLabel);
             DrawShape.Load(GraphicsDevice);
         }
 
@@ -98,41 +105,32 @@ namespace Gravity_Simulation
 
             group.Update(mouse, new KeyboardState());
            
-            simSpeed = (float)Math.Pow(2, simSpeedSlider.value - 4);
+            float simSpeed = (float)Math.Pow(2, simSpeedSlider.value - 4);
             simSpeedLabel.text = "Simulation speed: " + simSpeed.ToString("0.00") + "x";
+            Physics.simSpeed = simSpeed;
 
-            simPrecision = (float)Math.Pow(2, simPrecisionSlider.value - 1);
+            float simPrecision = (float)Math.Pow(2, simPrecisionSlider.value - 1);
             simPrecisionLabel.text = "Simulation precision: " + simPrecision.ToString("0.00") + "x";
-            canvas.precision = simPrecision;
+            Physics.simPrecision = simPrecision;
 
-            SimulateTick(simSpeed);
+            float simTime = Physics.simTime;
+            simTimeLabel.text = "Simulation time elapsed: " + simTime.ToString("0.00") + " s";
+
+            float simFrequency = Physics.simFrequency;
+            simFrequencyLabel.text = "Simulation frequency: " + simFrequency.ToString("0") + " Hz";
+            float idealSimFrequency = 1f / Physics.simPeriod;
+
+            if (simFrequency / idealSimFrequency < 0.90) simFrequencyLabel.color = Color.Red;
+            else if (simFrequency / idealSimFrequency < 0.98) simFrequencyLabel.color = Color.Orange;
+            else simFrequencyLabel.color = Color.Black;
+
+
+            Physics.running = startStop.on;
+            canvas.tracking = tracking.on;
+            canvas.trajectories = drawTrajectories.on;
+            canvas.Update(mouse);
 
             base.Update(gameTime);
-        }
-
-        public void SimulateTick(float speed)
-        {
-            if (startStop.on)
-            {
-                canvas.speed = simSpeed;
-                simTime += 1f / 60f * simSpeed;
-                simTimeLabel.text = "Simulation time elapsed: " + simTime.ToString("0.00") + " s";
-                MouseState mouse = Mouse.GetState();
-                if (speed > 1)
-                {
-                    for (int i = 0; i < speed; i++)
-                    {
-                        canvas.Update(mouse);
-                    }
-                }
-                else
-                {
-                    canvas.Update(mouse);
-                }
-                    
-                if (tracking.on) canvas.TrackCenterOfMass();
-            }
-            canvas.trajectories = drawTrajectories.on;
         }
 
         protected override void Draw(GameTime gameTime)

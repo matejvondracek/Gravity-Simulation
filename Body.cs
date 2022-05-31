@@ -58,18 +58,13 @@ namespace Gravity_Simulation
         }
 
         #region cycle
-        public void Update(float speed)
+        public void Update(float precision)
         {
-            if (speed < 1)
-            {
-                velocity += acceleration * speed;
-                pos += velocity * speed;
-            }
-            else
-            {
-                velocity += acceleration;
-                pos += velocity;
-            }            
+            UpdateTexture();
+
+            velocity += acceleration / precision;
+            pos += velocity / precision;      
+
             drawbox = new Rectangle((int)pos.X - radius, (int)pos.Y - radius, 2 * radius, 2 * radius);
             acceleration = new Vector2();
             GetMomementum();
@@ -85,10 +80,6 @@ namespace Gravity_Simulation
                     points.Add(point);
                 }
             }
-
-            //update label
-            Rectangle labelRect = new Rectangle(drawbox.X + radius / 2, drawbox.Y + radius / 2, radius, radius);
-            label = new Label(labelRect, Convert.ToString(mass), font, Color.Yellow);
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -97,5 +88,15 @@ namespace Gravity_Simulation
             if (label != null) label.Draw(spriteBatch);
         }
         #endregion
+
+        public void UpdateTexture()
+        {
+            //update drawbox
+            drawbox = new Rectangle((int)pos.X - radius, (int)pos.Y - radius, 2 * radius, 2 * radius);
+
+            //update label
+            Rectangle labelRect = new Rectangle(drawbox.X + radius / 2, drawbox.Y + radius / 2, radius, radius);
+            label = new Label(labelRect, Convert.ToString(mass), font, Color.Black);
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
 using ButtonUI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,21 +10,20 @@ namespace Gravity_Simulation
 { 
     public class Canvas : UIObject
     {
-        readonly List<Body> bodies = new List<Body>();
-        readonly float gravConstant = 100;
+        List<Body> bodies = new List<Body>();
         Vector2 centerOfMass = new Vector2();
-        public bool trajectories = false;
+        public bool trajectories = false, tracking = true;
         List<Point> trajectoryPoints = new List<Point>();
-        public Color trajectoryColor = Color.Red;
-        public float speed = 1f, precision = 1f;
+        Color trajectoryColor = Color.Red;
+        public Texture2D sky;
 
         public Canvas(Rectangle _rect) : base(_rect)
         {
             Texture2D texture = Game1.self.Content.Load<Texture2D>("body1");
-            bodies.Add(new Body(new Vector2(800, 500), new Vector2(), 20, 50, texture));
-            bodies.Add(new Body(new Vector2(800, 800), new Vector2(12, 0), 30, 100, texture));
-            bodies.Add(new Body(new Vector2(800, 850), new Vector2(16, 0), 5, 1, texture));
-            bodies.Add(new Body(new Vector2(400, 400), new Vector2(), 50, 500, texture));
+            //bodies.Add(new Body(new Vector2(800, 500), new Vector2(), 5, 50, texture));
+            Physics.CreateBody(new Body(new Vector2(800, 800), new Vector2(12, 0), 10, 100, texture));
+            //bodies.Add(new Body(new Vector2(800, 850), new Vector2(16, 0), 5, 1, texture));
+            Physics.CreateBody(new Body(new Vector2(400, 400), new Vector2(), 50, 500, texture));
         }
 
         #region cycle
@@ -37,94 +36,38 @@ namespace Gravity_Simulation
         {
             if ((mouse.LeftButton == ButtonState.Pressed) && rect.Contains(mouse.Position))
             {
-                //create body
+                //Body body = new Body(new Vector2(), new Vector2(), 0, 0, );
+                //Physics.CreateBody(body);
             }
 
-            for (int i = 0; i < precision; i++)
+            bodies = Physics.bodyStates;
+
+            //track movement
+            if (tracking)
             {
-                //gravity acceleration
-                foreach (Body body1 in bodies)
-                {
-                    foreach (Body body2 in bodies)
-                    {
-                        if (body1 != body2)
-                        {
-                            Accelerate(body1, body2);
-                        }
-                    }
-                }
+                UpdateCenterOfMass();
+                TrackCenterOfMass();
+            }            
+            
+            //draw trajectories
+            if (trajectories) MarkTrajectories();   
+            
 
-                //move bodies
-                foreach (Body body in bodies)
-                {
-                    body.Update(speed / precision);
-                }
-
-                //check for collisions
-                HashSet<Body> toBeRemoved = new HashSet<Body>();
-                foreach (Body body1 in bodies)
-                {
-                    foreach (Body body2 in bodies)
-                    {
-                        if ((body1 != body2) && !toBeRemoved.Contains(body1) && !toBeRemoved.Contains(body2) && body1.OverlapsWith(body2))
-                        {
-                            if (body1.mass < body2.mass)
-                            {                            
-                                body2.CollidesWith(body1);
-                                toBeRemoved.Add(body1);
-                            
-                            }
-                            else
-                            {
-                                body1.CollidesWith(body2);
-                                toBeRemoved.Add(body2);
-                            }
-                        }
-                    }
-                }
-                foreach (Body body in toBeRemoved)
-                {
-                    bodies.Remove(body);
-                } 
-
-                if (trajectories)
-                {
-                    MarkTrajectories();
-                }
-            }
-        }
-
-        private void UpdateCenterOfMass()
-        {
-            Body centerBody = new Body(bodies[0].pos, bodies[0].velocity, 100, bodies[0].mass, bodies[0].texture);
-            for (int i = 1; i < bodies.Count; i++)
-            {
-                centerBody.CollidesWith(bodies[i]);
-            }
-            centerOfMass = centerBody.pos;
-        }
-
-        public void TrackCenterOfMass()
-        {
-            UpdateCenterOfMass();
-            Vector2 distance = rect.Center.ToVector2() - centerOfMass;
-            foreach (Body body in bodies)
-            {
-                body.pos += distance;
-            }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             //draw background
-            DrawShape.Rectangle(spriteBatch, rect, Color.Yellow, 10, Color.Black);
+            //Rectangle background = new Rectangle(centerOfMass.ToPoint() - rect.Center, rect.Size);
+            Rectangle background = rect;
+            spriteBatch.Draw(sky, background, Color.White);
 
             //draw trajectories
             if (trajectories)
             {
                 foreach (Point point in trajectoryPoints)
                 {
-                    DrawShape.Rectangle(spriteBatch, new Rectangle(point.X, point.Y, 2, 2), trajectoryColor);
+                    DrawShape.Rectangle(spriteBatch, new Rectangle(point.X - 1, point.Y - 1, 2, 2), trajectoryColor);
                 }
             }
             else trajectoryPoints.Clear();
@@ -132,27 +75,40 @@ namespace Gravity_Simulation
             //draw bodies
             foreach (Body body in bodies)
             {
+                body.UpdateTexture();
                 if (rect.Intersects(body.drawbox)) body.Draw(spriteBatch);
             }
         }
         #endregion
+        private void UpdateCenterOfMass()
+        {
+            if (bodies.Count > 0)
+            {
+                Body centerBody = new Body(bodies[0].pos, bodies[0].velocity, 100, bodies[0].mass, bodies[0].texture);
+                for (int i = 1; i < bodies.Count; i++)
+                {
+                    centerBody.CollidesWith(bodies[i]);
+                }
+                centerOfMass = centerBody.pos;
+            }
+            
+        }
 
+        public void TrackCenterOfMass()
+        {
+            Vector2 distance = rect.Center.ToVector2() - centerOfMass;
+            foreach (Body body in bodies)
+            {
+                body.pos += distance;
+            }
+        }
         private void MarkTrajectories()
         {
             foreach (Body body in bodies)
             {
-                if (!trajectoryPoints.Contains(body.pos.ToPoint())) trajectoryPoints.Add(body.pos.ToPoint());
+                Point pos = body.pos.ToPoint();
+                if (!trajectoryPoints.Contains(pos)) trajectoryPoints.Add(pos);
             }
-        }
-
-        private void Accelerate(Body sourceBody, Body targetBody)
-        {
-            Vector2 direction = sourceBody.pos - targetBody.pos;
-            float distance = direction.Length();
-            direction.Normalize();
-            float magnitude = gravConstant * sourceBody.mass / (float)Math.Pow(distance, 2);
-
-            targetBody.acceleration += direction * magnitude;
         }
     }
 }
