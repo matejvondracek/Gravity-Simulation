@@ -4,13 +4,16 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using DecimalVector2Project;
+using DecimalMath;
+
 
 namespace Gravity_Simulation
 {
     public static class Physics
     {
         public static bool running = false;
-        public static float simTime = 0, simPrecision = 1, simPeriod, simSpeed = 1, gravConstant = 100;
+        public static decimal simTime = 0, simPrecision = 1, simPeriod, simSpeed = 1, gravConstant = 100;
         public static int simFrequency = 0;
         public static List<Body> bodyStates = new List<Body>();
 
@@ -37,8 +40,8 @@ namespace Gravity_Simulation
                     
                 
                 TimeSpan time = stopwatch.Elapsed;
-                simPeriod = 1 / 50f / simPrecision / simSpeed;
-                if (running && (time.TotalSeconds >= simPeriod))
+                simPeriod = 1 / 50m / simPrecision / simSpeed;
+                if (running && (time.TotalSeconds >= (double)simPeriod))
                 {
                     frequencyCounter++;
                     stopwatch.Restart();
@@ -105,17 +108,17 @@ namespace Gravity_Simulation
 
         private static void Accelerate(Body sourceBody, Body targetBody)
         {
-            Vector2 direction = sourceBody.pos - targetBody.pos;
-            float distance = direction.Length();
+            DecimalVector2 direction = sourceBody.pos - targetBody.pos;
+            decimal distance = direction.Length();
             direction.Normalize();
-            float magnitude = gravConstant * sourceBody.mass / (float)Math.Pow(distance, 2);
 
+            decimal magnitude = (decimal)gravConstant * sourceBody.mass / DecimalEx.Pow(distance, 2);
             targetBody.acceleration += direction * magnitude;
         }
 
         public static void CreateBody(Body body)
         {
             bodies.Add(body);
-        }
+        }       
     }
 }

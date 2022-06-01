@@ -5,13 +5,14 @@ using ButtonUI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using DecimalVector2Project;
 
 namespace Gravity_Simulation
 { 
     public class Canvas : UIObject
     {
         List<Body> bodies = new List<Body>();
-        Vector2 centerOfMass = new Vector2();
+        DecimalVector2 centerOfMass = new DecimalVector2();
         public bool trajectories = false, tracking = true;
         List<Point> trajectoryPoints = new List<Point>();
         Color trajectoryColor = Color.Red;
@@ -21,9 +22,9 @@ namespace Gravity_Simulation
         {
             Texture2D texture = Game1.self.Content.Load<Texture2D>("body1");
             //bodies.Add(new Body(new Vector2(800, 500), new Vector2(), 5, 50, texture));
-            Physics.CreateBody(new Body(new Vector2(800, 800), new Vector2(12, 0), 10, 100, texture));
+            Physics.CreateBody(new Body(new DecimalVector2(800, 800), new DecimalVector2(12, 0), 10, 100, texture));
             //bodies.Add(new Body(new Vector2(800, 850), new Vector2(16, 0), 5, 1, texture));
-            Physics.CreateBody(new Body(new Vector2(400, 400), new Vector2(), 50, 500, texture));
+            Physics.CreateBody(new Body(new DecimalVector2(400, 400), new DecimalVector2(), 50, 500, texture));
         }
 
         #region cycle
@@ -96,7 +97,7 @@ namespace Gravity_Simulation
 
         public void TrackCenterOfMass()
         {
-            Vector2 distance = rect.Center.ToVector2() - centerOfMass;
+            DecimalVector2 distance = new DecimalVector2(rect.Center) - centerOfMass;
             foreach (Body body in bodies)
             {
                 body.pos += distance;

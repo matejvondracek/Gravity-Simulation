@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -24,12 +24,16 @@
     <TrimmerRootAssembly Include="Microsoft.Xna.Framework.Content.ContentTypeReader" Visible="false" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DecimalMath.DecimalEx" Version="1.0.2" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ButtonUI">
       <HintPath>ButtonUI.dll</HintPath>
+    </Reference>
+    <Reference Include="DecimalVector2Project">
+      <HintPath>..\DecimalVector2Project\bin\Debug\.netcoreapp,version=v3.1\DecimalVector2Project.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

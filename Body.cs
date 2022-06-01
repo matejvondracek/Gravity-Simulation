@@ -5,22 +5,23 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ButtonUI;
+using DecimalMath;
+using DecimalVector2Project;
 
 namespace Gravity_Simulation
-{
-    
+{   
     public class Body
     {
         public Texture2D texture;
         public Rectangle drawbox;
-        public Vector2 pos, velocity, acceleration = new Vector2(), momentum;
-        public int radius, mass;
+        public DecimalVector2 pos, velocity, acceleration = new DecimalVector2(), momentum;
+        public decimal radius, mass;
         public HashSet<Point> points = new HashSet<Point>();
         public Label label;
         public SpriteFont font;
 
 
-        public Body(Vector2 _pos, Vector2 _velocity, int _radius, int _mass, Texture2D _texture)
+        public Body(DecimalVector2 _pos, DecimalVector2 _velocity, decimal _radius, decimal _mass, Texture2D _texture)
         {
             pos = _pos;
             velocity = _velocity;
@@ -39,41 +40,40 @@ namespace Gravity_Simulation
         public void CollidesWith(Body body)
         {           
             
-            Vector2 distance = body.pos - pos;
+            DecimalVector2 distance = body.pos - pos;
             pos += distance / (mass + body.mass) * body.mass;
 
             mass += body.mass;
             momentum = momentum + body.momentum;
             velocity = momentum / mass;
 
-            int volume1 = (int)(4f / 3f * 3.14f * Math.Pow(radius, 3));
-            int volume2 = (int)(4f / 3f * 3.14f * Math.Pow(body.radius, 3));
-            radius = (int)Math.Cbrt((3f * (volume1 + volume2)) / (4f * 3.14f));
+            decimal volume1 = 4m / 3m * DecimalEx.Pi * DecimalEx.Pow(radius, 3);
+            decimal volume2 = 4m / 3m * DecimalEx.Pi * DecimalEx.Pow(body.radius, 3);
+            radius = DecimalEx.Pow(3m * (volume1 + volume2) / (4m * DecimalEx.Pi), 1m / 3m);
         }
 
-        public Vector2 GetMomementum()
+        public DecimalVector2 GetMomementum()
         {
             momentum = velocity * mass;
             return momentum;
         }
 
         #region cycle
-        public void Update(float precision)
+        public void Update(decimal precision)
         {
             UpdateTexture();
 
             velocity += acceleration / precision;
             pos += velocity / precision;      
 
-            drawbox = new Rectangle((int)pos.X - radius, (int)pos.Y - radius, 2 * radius, 2 * radius);
-            acceleration = new Vector2();
+            acceleration = new DecimalVector2();
             GetMomementum();
 
             //update set representation
             points.Clear();
-            for (int x = -radius; x < radius; x++)
+            for (int x = (int)-radius; x < radius; x++)
             {
-                for (int y = -radius; y < radius; y++)
+                for (int y = (int)-radius; y < radius; y++)
                 {
                     Point point = new Point((int)pos.X + x, (int)pos.Y + y);
                     //now square, should be circle
@@ -92,10 +92,10 @@ namespace Gravity_Simulation
         public void UpdateTexture()
         {
             //update drawbox
-            drawbox = new Rectangle((int)pos.X - radius, (int)pos.Y - radius, 2 * radius, 2 * radius);
+            drawbox = new Rectangle((int)(pos.X - radius), (int)(pos.Y - radius), (int)(2 * radius), (int)(2 * radius));
 
             //update label
-            Rectangle labelRect = new Rectangle(drawbox.X + radius / 2, drawbox.Y + radius / 2, radius, radius);
+            Rectangle labelRect = new Rectangle(drawbox.X + (int)radius / 2, drawbox.Y + (int)radius / 2, (int)radius, (int)radius);
             label = new Label(labelRect, Convert.ToString(mass), font, Color.Black);
         }
     }

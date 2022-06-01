@@ -105,30 +105,30 @@ namespace Gravity_Simulation
 
             group.Update(mouse, new KeyboardState());
            
-            float simSpeed = (float)Math.Pow(2, simSpeedSlider.value - 4);
+            decimal simSpeed = (decimal)Math.Pow(2, simSpeedSlider.value - 4);
             simSpeedLabel.text = "Simulation speed: " + simSpeed.ToString("0.00") + "x";
             Physics.simSpeed = simSpeed;
 
-            float simPrecision = (float)Math.Pow(2, simPrecisionSlider.value - 1);
+            decimal simPrecision = (decimal)Math.Pow(2, simPrecisionSlider.value - 1);
             simPrecisionLabel.text = "Simulation precision: " + simPrecision.ToString("0.00") + "x";
             Physics.simPrecision = simPrecision;
 
-            float simTime = Physics.simTime;
+            decimal simTime = Physics.simTime;
             simTimeLabel.text = "Simulation time elapsed: " + simTime.ToString("0.00") + " s";
 
-            float simFrequency = Physics.simFrequency;
+            decimal simFrequency = Physics.simFrequency;
             simFrequencyLabel.text = "Simulation frequency: " + simFrequency.ToString("0") + " Hz";
-            float idealSimFrequency = 1f / Physics.simPeriod;
+            decimal idealSimFrequency = 1m / Physics.simPeriod;
 
-            if (simFrequency / idealSimFrequency < 0.90) simFrequencyLabel.color = Color.Red;
-            else if (simFrequency / idealSimFrequency < 0.98) simFrequencyLabel.color = Color.Orange;
+            if (simFrequency / idealSimFrequency < 0.90m) simFrequencyLabel.color = Color.Red;
+            else if (simFrequency / idealSimFrequency < 0.98m) simFrequencyLabel.color = Color.Orange;
             else simFrequencyLabel.color = Color.Black;
 
 
             Physics.running = startStop.on;
             canvas.tracking = tracking.on;
             canvas.trajectories = drawTrajectories.on;
-            canvas.Update(mouse);
+            canvas.Update(mouse);           
 
             base.Update(gameTime);
         }
