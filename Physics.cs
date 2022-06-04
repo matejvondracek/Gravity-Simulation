@@ -105,12 +105,19 @@ namespace Gravity_Simulation
 
         private static void Accelerate(Body sourceBody, Body targetBody)
         {
+            Vector2 localize = sourceBody.pos;
+            sourceBody.pos -= localize;
+            targetBody.pos -= localize;
+
             Vector2 direction = sourceBody.pos - targetBody.pos;
             float distance = direction.Length();
             direction.Normalize();
             float magnitude = gravConstant * sourceBody.mass / (float)Math.Pow(distance, 2);
 
             targetBody.acceleration += direction * magnitude;
+
+            sourceBody.pos += localize;
+            targetBody.pos += localize;
         }
 
         public static void CreateBody(Body body)
