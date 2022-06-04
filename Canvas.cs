@@ -21,10 +21,11 @@ namespace Gravity_Simulation
         public Canvas(Rectangle _rect) : base(_rect)
         {
             Texture2D texture = Game1.self.Content.Load<Texture2D>("body1");
-            //bodies.Add(new Body(new Vector2(800, 500), new Vector2(), 5, 50, texture));
-            Physics.CreateBody(new Body(new DecimalVector2(800, 800), new DecimalVector2(12, 0), 10, 100, texture));
-            //bodies.Add(new Body(new Vector2(800, 850), new Vector2(16, 0), 5, 1, texture));
-            Physics.CreateBody(new Body(new DecimalVector2(400, 400), new DecimalVector2(), 50, 500, texture));
+            Physics.CreateBody(new Body(new DecimalVector2(800, 400), new DecimalVector2(-5, 0), 10, 10, texture));
+            Physics.CreateBody(new Body(new DecimalVector2(800, 800), new DecimalVector2(), 50, 100, texture));
+            Physics.CreateBody(new Body(new DecimalVector2(800, 1200), new DecimalVector2(5, 0), 10, 10, texture));
+            Physics.CreateBody(new Body(new DecimalVector2(400, 800), new DecimalVector2(0, 5), 10, 10, texture));
+            Physics.CreateBody(new Body(new DecimalVector2(1200, 800), new DecimalVector2(0, -5), 10, 10, texture));
         }
 
         #region cycle

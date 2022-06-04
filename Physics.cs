@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using DecimalVector2Project;
 using DecimalMath;
+using System.Threading.Tasks;
 
 
 namespace Gravity_Simulation
@@ -55,20 +56,20 @@ namespace Gravity_Simulation
             simTime += simPeriod * simSpeed;
 
             //calculate gravity acceleration
-            foreach (Body body1 in bodies)
+            Parallel.ForEach(bodies, body1 =>
             {
                 foreach (Body body2 in bodies)
                 {
                     if (body1 != body2) Accelerate(body1, body2);
                 }
-            }
+            });
 
             //move bodies
-            foreach (Body body in bodies) body.Update(simPrecision);
+            Parallel.ForEach(bodies, body => body.Update(simPrecision));
 
             //check for collisions
             HashSet<Body> toBeRemoved = new HashSet<Body>();
-            foreach (Body body1 in bodies)
+            Parallel.ForEach(bodies, body1 =>
             {
                 foreach (Body body2 in bodies)
                 {
@@ -86,11 +87,8 @@ namespace Gravity_Simulation
                         }
                     }
                 }
-            }
-            foreach (Body body in toBeRemoved)
-            {
-                bodies.Remove(body);
-            }
+            });
+            Parallel.ForEach(toBeRemoved, body => bodies.Remove(body));
 
             bodyStates = CopyBodies(bodies);
         }
@@ -98,11 +96,11 @@ namespace Gravity_Simulation
         private static List<Body> CopyBodies(List<Body> bodies)
         {
             List<Body> newBodyList = new List<Body>();
-            foreach (Body body in bodies)
+            Parallel.ForEach(bodies, body =>
             {
                 Body newBody = new Body(body.pos, body.velocity, body.radius, body.mass, body.texture);
                 newBodyList.Add(newBody);
-            }
+            });
             return newBodyList;
         }
 
