@@ -11,13 +11,12 @@ namespace Gravity_Simulation
     public static class Physics
     {
         public static bool running = false;
-        public static decimal simTime = 0, simPrecision = 1, simPeriod, simSpeed = 1, gravConstant = 100;
+        public static decimal simTime = 0, simPrecision = 1, simPeriod, simSpeed = 1, gravConstant = 6.6743m * DecimalEx.Pow(10, -11) /*grav. constant*/;
         public static int simFrequency = 0;
         public static List<Body> bodyStates = new List<Body>();
 
         private readonly static List<Body> bodies = new List<Body>();
         private static int frequencyCounter = 0;
-
 
         public static void StartSimulation()
         {
@@ -34,8 +33,7 @@ namespace Gravity_Simulation
                     secondwatch.Restart();
                     simFrequency = frequencyCounter;
                     frequencyCounter = 0;
-                }
-                    
+                }                  
                 
                 TimeSpan time = stopwatch.Elapsed;
                 simPeriod = 1 / 50m / simPrecision / simSpeed;
@@ -62,10 +60,10 @@ namespace Gravity_Simulation
             }
 
             //move bodies
-            Parallel.ForEach(bodies, body => body.Update(simPrecision));
+            foreach (Body body in bodies) body.Update(simPrecision);
 
             //check for collisions
-            HashSet<Body> toBeRemoved = new HashSet<Body>();
+            /*List<Body> toBeRemoved = new List<Body>();
             foreach (Body body1 in bodies)
             {
                 Parallel.ForEach(bodies, body2 =>
@@ -85,7 +83,7 @@ namespace Gravity_Simulation
                     }
                 });
             }
-            foreach (Body body in toBeRemoved) bodies.Remove(body);
+            foreach (Body body in toBeRemoved) bodies.Remove(body);*/
 
             bodyStates = CopyBodies(bodies);
         }
@@ -107,7 +105,7 @@ namespace Gravity_Simulation
             decimal distance = direction.Length();
             direction.Normalize();
 
-            decimal magnitude = (decimal)gravConstant * sourceBody.mass / DecimalEx.Pow(distance, 2);
+            decimal magnitude = gravConstant * sourceBody.mass / DecimalEx.Pow(distance, 2);
             targetBody.acceleration += direction * magnitude;
         }
 

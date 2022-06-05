@@ -14,17 +14,24 @@ namespace Gravity_Simulation
     {
         public Texture2D texture;
         public Rectangle drawbox;
-        public DecimalVector2 pos, velocity, acceleration = new DecimalVector2(), momentum;
-        public decimal mass, radius;
+        public DecimalVector2 pos /*in AU*/, velocity /*in AU/day*/, acceleration /*in AU/day^2*/ = new DecimalVector2(), momentum /*in Earth's mass * AU / day */;
+        public decimal mass /*in Earth's mass*/, radius /*in AU*/;
         public Label label;
         public SpriteFont font;
 
-
+        /// <summary>
+        /// _pos is in AU, _velocity is in km/s, _radius is in Earth's radius, _mass is in Earth's mass.
+        /// </summary>
+        /// <param name="_pos"></param>
+        /// <param name="_velocity"></param>
+        /// <param name="_radius"></param>
+        /// <param name="_mass"></param>
+        /// <param name="_texture"></param>
         public Body(DecimalVector2 _pos, DecimalVector2 _velocity, decimal _radius, decimal _mass, Texture2D _texture)
         {
             pos = _pos;
-            velocity = _velocity;
-            radius = _radius;
+            velocity = _velocity / 149597871 * 3600 * 24; ///conversion from km/s to AU/day
+            radius = _radius * 62378 / 149597871; ///conversion from Earth's radius to AU
             mass = _mass;
             texture = _texture;
             font = Game1.self.Content.Load<SpriteFont>("Arial");
@@ -59,8 +66,6 @@ namespace Gravity_Simulation
         #region cycle
         public void Update(decimal precision)
         {
-            UpdateTexture();
-
             velocity += acceleration / precision;
             pos += velocity / precision;      
 
@@ -77,11 +82,12 @@ namespace Gravity_Simulation
 
         public void UpdateTexture()
         {
+            int zoom = 1000;
             //update drawbox
-            drawbox = new Rectangle((int)(pos.X - radius), (int)(pos.Y - radius), (int)(2 * radius), (int)(2 * radius));
+            drawbox = new Rectangle((int)((pos.X - radius) * zoom), (int)((pos.Y - radius) * zoom), (int)(2 * radius * zoom), (int)(2 * radius * zoom));
 
             //update label
-            Rectangle labelRect = new Rectangle(drawbox.X + (int)radius / 2, drawbox.Y + (int)radius / 2, (int)radius, (int)radius);
+            Rectangle labelRect = new Rectangle(drawbox.X + (int)(radius / 2), drawbox.Y + (int)(radius / 2), (int)radius, (int)radius);
             label = new Label(labelRect, Convert.ToString(mass), font, Color.Black);
         }
     }

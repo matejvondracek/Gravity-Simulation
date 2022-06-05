@@ -21,11 +21,14 @@ namespace Gravity_Simulation
         public Canvas(Rectangle _rect) : base(_rect)
         {
             Texture2D texture = Game1.self.Content.Load<Texture2D>("body1");
-            Physics.CreateBody(new Body(new DecimalVector2(800, 400), new DecimalVector2(-5, 0), 10, 10, texture));
+            /*Physics.CreateBody(new Body(new DecimalVector2(800, 400), new DecimalVector2(-5, 0), 10, 10, texture));
             Physics.CreateBody(new Body(new DecimalVector2(800, 800), new DecimalVector2(), 50, 100, texture));
             Physics.CreateBody(new Body(new DecimalVector2(800, 1200), new DecimalVector2(5, 0), 10, 10, texture));
             Physics.CreateBody(new Body(new DecimalVector2(400, 800), new DecimalVector2(0, 5), 10, 10, texture));
-            Physics.CreateBody(new Body(new DecimalVector2(1200, 800), new DecimalVector2(0, -5), 10, 10, texture));
+            Physics.CreateBody(new Body(new DecimalVector2(1200, 800), new DecimalVector2(0, -5), 10, 10, texture));*/
+            Physics.CreateBody(new Body(new DecimalVector2(), new DecimalVector2(), 109, 166475, texture)); //sun
+            Physics.CreateBody(new Body(new DecimalVector2(0, 1), new DecimalVector2(0, -29.78m), 1, 1, texture)); //earth
+            Physics.CreateBody(new Body(new DecimalVector2(0, 1.0026m), new DecimalVector2(0, -29.78m - 1.022m), 0.1365m, 0.0123m, texture)); //moon
         }
 
         #region cycle
@@ -53,8 +56,6 @@ namespace Gravity_Simulation
             
             //draw trajectories
             if (trajectories) MarkTrajectories();   
-            
-
         }
 
         public override void Draw(SpriteBatch spriteBatch)
