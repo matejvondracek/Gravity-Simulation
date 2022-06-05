@@ -15,8 +15,7 @@ namespace Gravity_Simulation
         public Texture2D texture;
         public Rectangle drawbox;
         public DecimalVector2 pos, velocity, acceleration = new DecimalVector2(), momentum;
-        public decimal radius, mass;
-        public HashSet<Point> points = new HashSet<Point>();
+        public decimal mass, radius;
         public Label label;
         public SpriteFont font;
 
@@ -34,7 +33,7 @@ namespace Gravity_Simulation
 
         public bool OverlapsWith(Body body)
         {
-            return points.Overlaps(body.points);
+            return (DecimalEx.Pow(DecimalEx.Pow(this.pos.X - body.pos.X, 2) + DecimalEx.Pow(this.pos.Y - body.pos.Y, 2), 1 / 2m) <= this.radius + body.radius);
         }
 
         public void CollidesWith(Body body)
@@ -68,18 +67,6 @@ namespace Gravity_Simulation
 
             acceleration = new DecimalVector2();
             GetMomementum();
-
-            //update set representation
-            points.Clear();
-            for (int x = (int)-radius; x < radius; x++)
-            {
-                for (int y = (int)-radius; y < radius; y++)
-                {
-                    Point point = new Point((int)pos.X + x, (int)pos.Y + y);
-                    //now square, should be circle
-                    points.Add(point);
-                }
-            }
         }
 
         public void Draw(SpriteBatch spriteBatch)
