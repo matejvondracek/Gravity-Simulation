@@ -53,22 +53,22 @@ namespace Gravity_Simulation
             simTime += simPeriod * simSpeed;
 
             //calculate gravity acceleration
-            Parallel.ForEach(bodies, body1 =>
+            foreach (Body body1 in bodies)
             {
-                foreach (Body body2 in bodies)
+                Parallel.ForEach(bodies, body2 =>
                 {
                     if (body1 != body2) Accelerate(body1, body2);
-                }
-            });
+                });
+            }
 
             //move bodies
             Parallel.ForEach(bodies, body => body.Update(simPrecision));
 
             //check for collisions
             HashSet<Body> toBeRemoved = new HashSet<Body>();
-            Parallel.ForEach(bodies, body1 =>
+            foreach (Body body1 in bodies)
             {
-                foreach (Body body2 in bodies)
+                Parallel.ForEach(bodies, body2 =>
                 {
                     if ((body1 != body2) && !toBeRemoved.Contains(body1) && !toBeRemoved.Contains(body2) && body1.OverlapsWith(body2))
                     {
@@ -83,9 +83,9 @@ namespace Gravity_Simulation
                             toBeRemoved.Add(body2);
                         }
                     }
-                }
-            });
-            Parallel.ForEach(toBeRemoved, body => bodies.Remove(body));
+                });
+            }
+            foreach (Body body in toBeRemoved) bodies.Remove(body);
 
             bodyStates = CopyBodies(bodies);
         }
@@ -93,11 +93,11 @@ namespace Gravity_Simulation
         private static List<Body> CopyBodies(List<Body> bodies)
         {
             List<Body> newBodyList = new List<Body>();
-            Parallel.ForEach(bodies, body =>
+            foreach (Body body in bodies)             
             {
                 Body newBody = new Body(body.pos, body.velocity, body.radius, body.mass, body.texture);
                 newBodyList.Add(newBody);
-            });
+            }
             return newBodyList;
         }
 

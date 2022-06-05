@@ -14,7 +14,7 @@ namespace Gravity_Simulation
         List<Body> bodies = new List<Body>();
         DecimalVector2 centerOfMass = new DecimalVector2();
         public bool trajectories = false, tracking = true;
-        List<Point> trajectoryPoints = new List<Point>();
+        readonly List<Point> trajectoryPoints = new List<Point>();
         Color trajectoryColor = Color.Red;
         public Texture2D sky;
 

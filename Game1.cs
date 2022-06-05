@@ -18,7 +18,7 @@ namespace Gravity_Simulation
         Label startStopLabel, title, simTimeLabel, simSpeedLabel, simPrecisionLabel, simFrequencyLabel;
         Canvas canvas;
         Slider simSpeedSlider, simPrecisionSlider;
-        UIGroup group = new UIGroup();
+        readonly UIGroup group = new UIGroup();
         Color background = Color.CornflowerBlue;
         public static Game self;
 
@@ -64,28 +64,34 @@ namespace Gravity_Simulation
 
             startStop = new ToggleButton(new Rectangle(1700, 200, 200, 100), textures, false);
             startStop.DefineText("Running", "Stopped", font, 10, Color.Black);
-                group.Add(startStop);
+            group.Add(startStop);
             startStopLabel = new Label(new Rectangle(1700, 100, 200, 100), "Simulation", font, Color.Black);
-                group.Add(startStopLabel);
+            group.Add(startStopLabel);
             title = new Label(new Rectangle(0, 10, 1920, 100), "Gravity Simulator", font, Color.Black);
-                group.Add(title);
-            canvas = new Canvas(new Rectangle(50, 150, 1500, 850));
-            canvas.sky = sky;
+            group.Add(title);
+            canvas = new Canvas(new Rectangle(50, 150, 1500, 850))
+            {
+                sky = sky
+            };
             tracking = new ToggleButton(new Rectangle(1700, 350, 200, 100), textures, true);
             tracking.DefineText("Tracking on", "Tracking off", font, 10, Color.Black);
-                group.Add(tracking);
+            group.Add(tracking);
             drawTrajectories = new ToggleButton(new Rectangle(1700, 500, 200, 100), textures, false);
             drawTrajectories.DefineText("Drawing on", "Drawing off", font, 10, Color.Black);
-                group.Add(drawTrajectories);
+            group.Add(drawTrajectories);
             simTimeLabel = new Label(new Rectangle(1400, 0, 400, 100), "Simulation time elapsed: 0 s", font, Color.Black);
-                group.Add(simTimeLabel);
-            simSpeedSlider = new Slider(new Rectangle(1600, 650, 300, 20), 1, 8, 8, textures);
-            simSpeedSlider.value = 4;
+            group.Add(simTimeLabel);
+            simSpeedSlider = new Slider(new Rectangle(1600, 650, 300, 20), 1, 8, 8, textures)
+            {
+                value = 4
+            };          
                 group.Add(simSpeedSlider);
             simSpeedLabel = new Label(new Rectangle(1600, 670, 200, 50), "Simulation speed: 1x", font, Color.Black);
                 group.Add(simSpeedLabel);
-            simPrecisionSlider = new Slider(new Rectangle(1600, 750, 300, 20), 1, 8, 8, textures);
-            simPrecisionSlider.value = 1;
+            simPrecisionSlider = new Slider(new Rectangle(1600, 750, 300, 20), 1, 8, 8, textures)
+            {
+                value = 1
+            };
                 group.Add(simPrecisionSlider);
             simPrecisionLabel = new Label(new Rectangle(1600, 770, 250, 50), "Simulation precision: 1x", font, Color.Black);
                 group.Add(simPrecisionLabel);

@@ -37,13 +37,12 @@ namespace Gravity_Simulation
         }
 
         public void CollidesWith(Body body)
-        {           
-            
+        {                      
             DecimalVector2 distance = body.pos - pos;
             pos += distance / (mass + body.mass) * body.mass;
 
             mass += body.mass;
-            momentum = momentum + body.momentum;
+            momentum += body.momentum;
             velocity = momentum / mass;
 
             decimal volume1 = 4m / 3m * DecimalEx.Pi * DecimalEx.Pow(radius, 3);
